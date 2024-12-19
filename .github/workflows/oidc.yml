@@ -40,7 +40,3 @@ jobs:
         run: aws s3 ls
 
      
-
-      # Step 7: Apply Terraform Configuration
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
