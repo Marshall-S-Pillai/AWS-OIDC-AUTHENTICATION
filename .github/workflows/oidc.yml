@@ -1,0 +1,58 @@
+name: AWS OIDC
+
+on:
+  push:
+    branches:
+      - "main"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: "us-east-1"
+
+jobs:
+  OIDC:
+    name: AWS OIDC Deployment
+    runs-on: ubuntu-latest
+    environment: oidc
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      # Step 1: Clone the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Configure AWS credentials using OIDC
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/github-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+          audience: sts.amazonaws.com
+
+      # Step 3: Print S3 Buckets (Validation Step)
+      - name: List S3 Buckets
+        run: aws s3 ls
+
+      # Step 4: Set up Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      # Step 5: Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 6: Plan Terraform Deployment
+      - name: Terraform Plan
+        run: terraform plan
+
+      # Step 7: Apply Terraform Configuration
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
