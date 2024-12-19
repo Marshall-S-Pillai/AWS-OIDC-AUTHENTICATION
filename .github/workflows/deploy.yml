@@ -1,0 +1,45 @@
+name: Deploy AWS Infrastructure with Terraform
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Step 2: Set up Terraform
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+
+    # Step 3: Configure AWS Credentials using OIDC
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v3
+      with:
+        role-to-assume: arn:aws:iam::YOUR_AWS_ACCOUNT_ID:role/github-oidc-role
+        aws-region: us-east-1
+
+    # Step 4: Initialize Terraform
+    - name: Terraform Init
+      run: terraform init
+
+    # Step 5: Plan Terraform deployment
+    - name: Terraform Plan
+      run: terraform plan
+
+    # Step 6: Apply Terraform configuration
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
