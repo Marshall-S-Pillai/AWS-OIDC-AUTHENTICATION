@@ -121,14 +121,13 @@ resource "aws_security_group" "web_sg" {
 
 # EC2 Instance (Web Server)
 resource "aws_instance" "web_server" {
-  ami           = "ami-0c02fb55956c7d316"  # Amazon Linux 2 AMI (adjust as needed)
-  instance_type = "t2.micro"
-  subnet_id     = aws_subnet.public_subnet.id
-  security_groups = [
-    aws_security_group.web_sg.name
-  ]
-  user_data = file("${path.module}/userdata.sh")  # Make sure userdata.sh exists in the correct path
+  ami                    = "ami-0c02fb55956c7d316"  # Amazon Linux 2 AMI (adjust as needed)
+  instance_type          = "t2.micro"
+  subnet_id              = aws_subnet.public_subnet.id
+  vpc_security_group_ids = [aws_security_group.web_sg.id]  # Use vpc_security_group_ids
+  user_data              = file("${path.module}/userdata.sh")  # Make sure userdata.sh exists in the correct path
   tags = {
     Name = "Web-Server"
   }
 }
+
