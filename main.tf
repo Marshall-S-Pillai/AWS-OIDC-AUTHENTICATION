@@ -123,7 +123,7 @@ resource "aws_instance" "web_server" {
   security_groups = [
     aws_security_group.web_sg.name
   ]
-  user_data = file("user_data.sh")
+  user_data = file("userdata.sh")
   tags = {
     Name = "Web-Server"
   }
