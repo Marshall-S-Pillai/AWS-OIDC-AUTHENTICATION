@@ -1,3 +1,4 @@
+# Provider
 provider "aws" {
   region = "us-east-1"
 }
@@ -12,7 +13,7 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Subnets
+# Public Subnet
 resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.1.0/24"
@@ -23,6 +24,7 @@ resource "aws_subnet" "public_subnet" {
   }
 }
 
+# Private Subnet
 resource "aws_subnet" "private_subnet" {
   vpc_id            = aws_vpc.main.id
   cidr_block        = "10.0.2.0/24"
@@ -42,7 +44,7 @@ resource "aws_internet_gateway" "igw" {
 
 # Elastic IP for NAT Gateway
 resource "aws_eip" "nat_eip" {
-  vpc = true
+  domain = "vpc"  # Updated for deprecation
 }
 
 # NAT Gateway
@@ -54,7 +56,7 @@ resource "aws_nat_gateway" "nat" {
   }
 }
 
-# Route Tables
+# Public Route Table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
   tags = {
@@ -62,6 +64,7 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
+# Private Route Table
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.main.id
   tags = {
@@ -69,13 +72,14 @@ resource "aws_route_table" "private_rt" {
   }
 }
 
-# Routes
+# Public Route
 resource "aws_route" "public_route" {
   route_table_id         = aws_route_table.public_rt.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
 }
 
+# Private Route
 resource "aws_route" "private_route" {
   route_table_id         = aws_route_table.private_rt.id
   destination_cidr_block = "0.0.0.0/0"
@@ -115,15 +119,15 @@ resource "aws_security_group" "web_sg" {
   }
 }
 
-# EC2 Instance
+# EC2 Instance (Web Server)
 resource "aws_instance" "web_server" {
-  ami           = "ami-0c02fb55956c7d316" # Amazon Linux 2 AMI
+  ami           = "ami-0c02fb55956c7d316"  # Amazon Linux 2 AMI (adjust as needed)
   instance_type = "t2.micro"
   subnet_id     = aws_subnet.public_subnet.id
   security_groups = [
     aws_security_group.web_sg.name
   ]
-  user_data = file("userdata.sh")
+  user_data = file("${path.module}/userdata.sh")  # Make sure userdata.sh exists in the correct path
   tags = {
     Name = "Web-Server"
   }
