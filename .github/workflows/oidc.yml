@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        shell: bash -e
+        shell: bash
 
     steps:
       # Step 1: Checkout the repository
@@ -42,17 +42,25 @@ jobs:
 
       # Step 4: Terraform Initialization
       - name: Terraform Init
-        run: terraform init
+        run: |
+          set -e
+          terraform init
 
       # Step 5: Terraform Plan
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: |
+          set -e
+          terraform plan -out=tfplan
 
       # Step 6: Terraform Apply
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          set -e
+          terraform apply -auto-approve tfplan
 
       # Step 7: Destroy Resources (Optional, Comment out if not needed)
       - name: Terraform Destroy
         if: github.event_name == 'workflow_dispatch' # Run only on manual trigger
-        run: terraform destroy -auto-approve
+        run: |
+          set -e
+          terraform destroy -auto-approve
