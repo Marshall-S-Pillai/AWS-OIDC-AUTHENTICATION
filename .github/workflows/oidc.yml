@@ -1,4 +1,4 @@
-name: AWS OIDC
+name: AWS Terraform OIDC Workflow
 
 on:
   push:
@@ -13,17 +13,16 @@ env:
   AWS_REGION: "us-east-1"
 
 jobs:
-  OIDC:
-    name: AWS OIDC Deployment
+  terraform:
+    name: Terraform Workflow
     runs-on: ubuntu-latest
-    environment: oidc
 
     defaults:
       run:
-        shell: bash
+        shell: bash -e
 
     steps:
-      # Step 1: Clone the repository
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -35,8 +34,25 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
-      # Step 3: Print S3 Buckets (Validation Step)
-      - name: List S3 Buckets
-        run: aws s3 ls
+      # Step 3: Install Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
 
-     
+      # Step 4: Terraform Initialization
+      - name: Terraform Init
+        run: terraform init
+
+      # Step 5: Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      # Step 6: Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+      # Step 7: Destroy Resources (Optional, Comment out if not needed)
+      - name: Terraform Destroy
+        if: github.event_name == 'workflow_dispatch' # Run only on manual trigger
+        run: terraform destroy -auto-approve
