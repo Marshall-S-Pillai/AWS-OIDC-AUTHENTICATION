@@ -57,15 +57,6 @@ resource "aws_eip" "nat_eip" {
   domain = "vpc"  # Updated and still supported
 }
 
-# NAT Gateway
-resource "aws_nat_gateway" "nat" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.public_subnet.id
-  tags = {
-    Name = "NAT-Gateway"
-  }
-}
-
 # Public Route Table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
