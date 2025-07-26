@@ -1,4 +1,14 @@
-# Provider
+terraform {
+  required_version = ">= 1.11.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.40"
+    }
+  }
+}
+
 provider "aws" {
   region = "us-east-1"
 }
@@ -44,7 +54,7 @@ resource "aws_internet_gateway" "igw" {
 
 # Elastic IP for NAT Gateway
 resource "aws_eip" "nat_eip" {
-  domain = "vpc"  # Updated for deprecation
+  domain = "vpc"  # Updated and still supported
 }
 
 # NAT Gateway
@@ -100,6 +110,7 @@ resource "aws_route_table_association" "private_association" {
 # Security Group
 resource "aws_security_group" "web_sg" {
   vpc_id = aws_vpc.main.id
+
   ingress {
     from_port   = 80
     to_port     = 80
@@ -121,13 +132,13 @@ resource "aws_security_group" "web_sg" {
 
 # EC2 Instance (Web Server)
 resource "aws_instance" "web_server" {
-  ami                    = "ami-0c02fb55956c7d316"  # Amazon Linux 2 AMI (adjust as needed)
+  ami                    = "ami-0c02fb55956c7d316"  # Amazon Linux 2
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
-  vpc_security_group_ids = [aws_security_group.web_sg.id]  # Use vpc_security_group_ids
-  user_data              = file("${path.module}/userdata.sh")  # Make sure userdata.sh exists in the correct path
+  vpc_security_group_ids = [aws_security_group.web_sg.id]
+  user_data              = file("${path.module}/userdata.sh")
+
   tags = {
     Name = "Web-Server"
   }
 }
-
