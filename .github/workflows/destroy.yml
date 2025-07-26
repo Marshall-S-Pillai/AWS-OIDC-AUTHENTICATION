@@ -9,7 +9,7 @@ permissions:
 
 env:
   AWS_REGION: "us-east-1"
-
+    
 jobs:
   destroy:
     name: Destroy Infrastructure
