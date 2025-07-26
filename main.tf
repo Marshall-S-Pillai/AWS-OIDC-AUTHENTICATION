@@ -52,11 +52,6 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-# Elastic IP for NAT Gateway
-resource "aws_eip" "nat_eip" {
-  domain = "vpc"  # Updated and still supported
-}
-
 # Public Route Table
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
@@ -65,12 +60,10 @@ resource "aws_route_table" "public_rt" {
   }
 }
 
-# Private Route Table
-resource "aws_route_table" "private_rt" {
-  vpc_id = aws_vpc.main.id
-  tags = {
-    Name = "Private-Route-Table"
-  }
+# Route Table Associations
+resource "aws_route_table_association" "public_association" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
 # Public Route
@@ -78,24 +71,6 @@ resource "aws_route" "public_route" {
   route_table_id         = aws_route_table.public_rt.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
-}
-
-# Private Route
-resource "aws_route" "private_route" {
-  route_table_id         = aws_route_table.private_rt.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat.id
-}
-
-# Route Table Associations
-resource "aws_route_table_association" "public_association" {
-  subnet_id      = aws_subnet.public_subnet.id
-  route_table_id = aws_route_table.public_rt.id
-}
-
-resource "aws_route_table_association" "private_association" {
-  subnet_id      = aws_subnet.private_subnet.id
-  route_table_id = aws_route_table.private_rt.id
 }
 
 # Security Group
@@ -123,7 +98,7 @@ resource "aws_security_group" "web_sg" {
 
 # EC2 Instance (Web Server)
 resource "aws_instance" "web_server" {
-  ami                    = "ami-0c02fb55956c7d316"  # Amazon Linux 2
+  ami                    = "ami-0c02fb55956c7d316"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
