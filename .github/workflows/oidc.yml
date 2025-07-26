@@ -12,7 +12,6 @@ permissions:
 
 env:
   AWS_REGION: "us-east-1"
-  ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
 
 jobs:
   terraform:
@@ -26,6 +25,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+
+      - name: Set ROLE_ARN environment variable
+        run: echo "ROLE_ARN=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}" >> $GITHUB_ENV
 
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4.0.2
