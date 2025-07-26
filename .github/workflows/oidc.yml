@@ -4,63 +4,53 @@ on:
   push:
     branches:
       - "main"
+  workflow_dispatch:
 
 permissions:
   id-token: write
   contents: read
 
 env:
-  AWS_REGION: "us-east-1" 
+  AWS_REGION: "us-east-1"
+  ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
 
 jobs:
   terraform:
     name: Terraform Workflow
     runs-on: ubuntu-latest
 
-    defaults: 
+    defaults:
       run:
         shell: bash
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Configure AWS credentials using OIDC
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
-          role-to-assume: arn:aws:iam::891377244169:role/githuboicdrole
+          role-to-assume: ${{ env.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
-      # Step 3: Install Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Step 4: Terraform Initialization
       - name: Terraform Init
-        run: |
-          set -e
-          terraform init
+        run: terraform init
 
-      # Step 5: Terraform Plan
+      - name: Terraform Validate
+        run: terraform validate
+
       - name: Terraform Plan
-        run: |
-          set -e
-          terraform plan -out=tfplan
+        run: terraform plan -out=tfplan
 
-      # Step 6: Terraform Apply
       - name: Terraform Apply
-        run: |
-          set -e
-          terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve tfplan
 
-      # Step 7: Destroy Resources (Optional, Comment out if not needed)
       - name: Terraform Destroy
-        if: github.event_name == 'workflow_dispatch' # Run only on manual trigger
-        run: |
-          set -e
-          terraform destroy -auto-approve
+        if: github.event_name == 'workflow_dispatch'
+        run: terraform destroy -auto-approve
