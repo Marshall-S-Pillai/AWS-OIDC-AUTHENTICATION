@@ -1,6 +1,6 @@
 name: Destroy AWS Infrastructure with Terraform
 
-on:
+on:  
   workflow_dispatch:  # Manual trigger only
 
 permissions:
