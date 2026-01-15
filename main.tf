@@ -41,6 +41,19 @@ resource "aws_subnet" "public_subnet" {
 }
 
 # --------------------
+# Private Subnet
+# --------------------
+resource "aws_subnet" "private_subnet" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "us-east-1a"
+
+  tags = {
+    Name = "Private-Subnet"
+  }
+}
+
+# --------------------
 # Internet Gateway
 # --------------------
 resource "aws_internet_gateway" "igw" {
@@ -105,7 +118,6 @@ resource "aws_instance" "web_server" {
   ami                    = "ami-0c02fb55956c7d316"
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public_subnet.id
-  subnet_id              = aws_subnet.private_subnet.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   user_data              = file("${path.module}/userdata.sh")
 
