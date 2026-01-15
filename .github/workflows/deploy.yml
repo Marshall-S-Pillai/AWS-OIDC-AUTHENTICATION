@@ -2,7 +2,7 @@ name: Deploy AWS Infrastructure with Terraform
 
 on:
   push:
-    branches:
+    branches:  
       - main
 
 permissions:
