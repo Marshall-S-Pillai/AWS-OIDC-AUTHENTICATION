@@ -24,22 +24,22 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set ROLE_ARN environment variable
         run: echo "ROLE_ARN=arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}" >> $GITHUB_ENV
 
       - name: Configure AWS credentials via OIDC
-        uses: aws-actions/configure-aws-credentials@v4.0.2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
           audience: sts.amazonaws.com
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: 1.11.0
+          terraform_version: 1.15.8
 
       - name: Terraform Init
         run: terraform init
@@ -51,6 +51,7 @@ jobs:
         run: terraform plan -out=tfplan
 
       - name: Terraform Apply
+        if: github.event_name == 'push'
         run: terraform apply -auto-approve tfplan
 
       - name: Terraform Destroy
